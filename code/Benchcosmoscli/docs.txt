@@ -1,0 +1,13 @@
+﻿# Create a SQL API database
+az cosmosdb sql database create 
+    --account-name msdocs-cosmos-nosql
+    --resource-group msdocs
+    --name cosmicworks
+
+# Create a SQL API container
+az cosmosdb sql container create
+    --account-name msdocs-cosmos-nosql 
+    --resource-group msdocs
+    --database-name cosmicworks
+    --name products
+
