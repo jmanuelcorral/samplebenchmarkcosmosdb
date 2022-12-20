@@ -17,10 +17,6 @@ namespace Benchcosmoscli.Helpers
                    accountEndpoint: Environment.GetEnvironmentVariable("COSMOS_ENDPOINT")!,
                    authKeyOrResourceToken: Environment.GetEnvironmentVariable("COSMOS_KEY")!
             );
-            // using CosmosClient client = new(
-            //         accountEndpoint: "https://indicosmos.documents.azure.com:443/",
-            //         authKeyOrResourceToken: "A66roLaK5v6LPlJxaddqGRUgfUqW1QaxZkLo6vxmK4lPEkGkPwkU9paeFDsDIyrO0dU5b95XImwxACDbo6r8uw=="
-            // );
             var db = client.GetDatabase(databaseName);
             var container = db.GetContainer(containerName);
             return container.CreateItemAsync<T>(Element);
