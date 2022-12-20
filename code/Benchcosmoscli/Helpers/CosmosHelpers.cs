@@ -1,4 +1,5 @@
 ﻿using Azure.Identity;
+using Benchcosmoscli.Benchmarks;
 using Microsoft.Azure.Cosmos;
 using System;
 using System.Collections.Generic;
@@ -17,10 +18,6 @@ namespace Benchcosmoscli.Helpers
                    accountEndpoint: Environment.GetEnvironmentVariable("COSMOS_ENDPOINT")!,
                    authKeyOrResourceToken: Environment.GetEnvironmentVariable("COSMOS_KEY")!
             );
-            // using CosmosClient client = new(
-            //         accountEndpoint: "https://indicosmos.documents.azure.com:443/",
-            //         authKeyOrResourceToken: "A66roLaK5v6LPlJxaddqGRUgfUqW1QaxZkLo6vxmK4lPEkGkPwkU9paeFDsDIyrO0dU5b95XImwxACDbo6r8uw=="
-            // );
             var db = client.GetDatabase(databaseName);
             var container = db.GetContainer(containerName);
             return container.CreateItemAsync<T>(Element);
@@ -30,9 +27,9 @@ namespace Benchcosmoscli.Helpers
         public static async Task<TransactionalBatchOperationResult<T>> InsertTransacctionalBatch<T>(string databaseName, string containerName, string partitionKeyName, List<T> Elements)
         {
             using CosmosClient client = new(
-                    accountEndpoint: Environment.GetEnvironmentVariable("COSMOS_ENDPOINT"),
-                  authKeyOrResourceToken: Environment.GetEnvironmentVariable("COSMOS_KEY")!
-              );
+                   accountEndpoint: Environment.GetEnvironmentVariable("COSMOS_ENDPOINT")!,
+                   authKeyOrResourceToken: Environment.GetEnvironmentVariable("COSMOS_KEY")!
+            );
             var db = client.GetDatabase(databaseName);
             var container = db.GetContainer(containerName);
             PartitionKey partitionKey = new PartitionKey(partitionKeyName);
@@ -48,13 +45,14 @@ namespace Benchcosmoscli.Helpers
             return null;
         }
 
-        public static async Task<IEnumerable<T>> QueryItems<T>(string databaseName, string containerName, QueryDefinition  query)
+        public static async Task<CosmosTestRun<T>> QueryItems<T>(string databaseName, string containerName, QueryDefinition  query)
         {
-            List<T> collection = new List<T>();
-           using CosmosClient client = new(
-                 accountEndpoint: Environment.GetEnvironmentVariable("COSMOS_ENDPOINT"),
-               authKeyOrResourceToken: Environment.GetEnvironmentVariable("COSMOS_KEY")!
-           );
+           List<T> collection = new List<T>();
+           double consumedRUs = 0;
+            using CosmosClient client = new(
+                   accountEndpoint: Environment.GetEnvironmentVariable("COSMOS_ENDPOINT")!,
+                   authKeyOrResourceToken: Environment.GetEnvironmentVariable("COSMOS_KEY")!
+            );
             var db = client.GetDatabase(databaseName);
             var container = db.GetContainer(containerName);
             using FeedIterator<T> feed = container.GetItemQueryIterator<T>(query);
@@ -62,12 +60,14 @@ namespace Benchcosmoscli.Helpers
             while (feed.HasMoreResults)
             {
                 FeedResponse<T> response = await feed.ReadNextAsync();
+                consumedRUs += response.RequestCharge;
                 foreach (T item in response)
                 {
                     collection.Add(item);
                 }
             }
-            return collection;
+            return CosmosTestRun<T>.SaveInTestRun(collection, consumedRUs);
         }
+
     }
 }

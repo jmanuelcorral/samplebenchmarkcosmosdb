@@ -13,8 +13,8 @@ namespace Benchcosmoscli.Benchmarks
     {
         public AntiVirusFriendlyConfig()
         {
-            AddJob(Job.MediumRun
-                .WithToolchain(InProcessNoEmitToolchain.Instance));
+            AddJob(Job.MediumRun.WithToolchain(InProcessNoEmitToolchain.Instance));
+            AddColumn(new RequestChargeColumn());
         }
     }
 }

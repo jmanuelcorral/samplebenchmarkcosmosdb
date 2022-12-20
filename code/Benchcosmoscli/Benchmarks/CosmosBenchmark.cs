@@ -1,7 +1,9 @@
 ﻿using Benchcosmoscli.Helpers;
 using Benchcosmoscli.Model;
 using BenchmarkDotNet.Attributes;
+using BenchmarkDotNet.Configs;
 using Bogus;
+using Microsoft.Azure.Cosmos;
 using Newtonsoft.Json;
 using System;
 using System.Collections.Generic;
@@ -19,9 +21,16 @@ namespace Benchcosmoscli.Benchmarks
         private int _numberOfInvoiceLinesPerInvoice = 30;
         private int _numberOfInvoices = 20;
 
+        private CosmosTestRun<InvoiceWithLines> _rootResult;
+        private CosmosTestRun<InvoiceLines> _linesResult;
+
+        private class Config : ManualConfig
+        {
+            public Config() => AddColumn(new RequestChargeColumn());
+        }
 
         [GlobalSetup]
-        public void Setup()
+        public async Task Setup()
         {
             Faker<InvoiceLines> FakerInvoiceLinesDataGenerator = new Faker<InvoiceLines>()
                 .RuleFor(p => p.Id, f => Guid.NewGuid())
@@ -36,22 +45,31 @@ namespace Benchcosmoscli.Benchmarks
            .RuleFor(p => p.lines, f => FakerInvoiceLinesDataGenerator.Generate(_numberOfInvoiceLinesPerInvoice));
 
             _invoiceData = FakeInvoiceDataGenerator.Generate(_numberOfInvoices).ToList();
+            //await CosmosHelpers.InsertTransacctionalBatch("indicosmos", "Invoices", "id", _invoiceData);
+            
+        }
 
-            //Console.WriteLine(JsonConvert.SerializeObject(_invoiceData, Formatting.Indented));
+        [Params(1000, 10000, 100000)]
+        public int N;
+
+        [IterationCleanup(Target = "QueryRoot")]
+        public void QueryRootOutput() => File.WriteAllText($"rtus-size.QueryRoot.{N}.txt", _rootResult._requestsConsumed.ToString());
+
+        [Benchmark]
+        public async Task QueryRoot()
+        {
+            _rootResult =  await CosmosHelpers.QueryItems<InvoiceWithLines>(databaseName: "indicosmos", containerName: "Invoices", query: new QueryDefinition("SELECT * FROM c"));
         }
 
 
-        [Benchmark]
-        public void InsertByRegistry()
-        {
-            for (int i = 0; i < _numberOfInvoices; i++)
-                CosmosHelpers.InsertItem("indicosmos", "Invoices", _invoiceData[i]);
-        }
+        [IterationCleanup(Target = "QueryLines")]
+        public void QueryLinesOutput() => File.WriteAllText($"rtus-size.QueryLines.{N}.txt", _linesResult._requestsConsumed.ToString());
 
         [Benchmark]
-        public void InsertBatch()
+        public async Task QueryLines()
         {
-            CosmosHelpers.InsertTransacctionalBatch("indicosmos", "Invoices", "id",_invoiceData);
+            _linesResult = await CosmosHelpers.QueryItems<InvoiceLines>(databaseName: "indicosmos", containerName: "Invoices", query: new QueryDefinition("SELECT * FROM c.lines"));
+            
         }
     }
 }
