@@ -4,7 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace Benchcosmoscli.Benchmarks
+namespace Benchcosmoscli.Config
 {
     public class CosmosTestRun<T>
     {

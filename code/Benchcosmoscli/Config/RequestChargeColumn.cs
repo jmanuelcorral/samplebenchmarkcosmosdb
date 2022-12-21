@@ -7,7 +7,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace Benchcosmoscli.Benchmarks
+namespace Benchcosmoscli.Config
 {
     public class RequestChargeColumn : IColumn
     {
@@ -28,7 +28,7 @@ namespace Benchcosmoscli.Benchmarks
         public string Legend => $"Custom '{ColumnName}' Request Charge column";
         public string GetValue(Summary summary, BenchmarkCase benchmarkCase, SummaryStyle style)
         {
-            
+
             var benchmarkName = benchmarkCase.Descriptor.WorkloadMethod.Name.ToLower();
             var parameter = benchmarkCase.Parameters.Items.FirstOrDefault(x => x.Name == "N");
             if (parameter == null)
@@ -38,7 +38,7 @@ namespace Benchcosmoscli.Benchmarks
             var N = Convert.ToInt32(parameter.Value);
             var filename = $"rtus-size.{benchmarkName}.{N}.txt";
             return File.Exists(filename) ? File.ReadAllText(filename) : "no file";
-            
+
 
         }
         public override string ToString() => ColumnName;
