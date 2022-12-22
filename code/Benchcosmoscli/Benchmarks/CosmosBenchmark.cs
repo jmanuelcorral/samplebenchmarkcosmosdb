@@ -31,17 +31,17 @@ namespace Benchcosmoscli.Benchmarks
         [Benchmark]
         public async Task QueryRoot()
         {
-            _rootResult =  await CosmosHelpers.QueryItems<InvoiceWithLines>(databaseName: "indicosmos", containerName: "Invoices2", query: new QueryDefinition($"SELECT * FROM c.data"));
+            _rootResult =  await CosmosHelpers.QueryItems<InvoiceWithLines>(databaseName: "indicosmos", containerName: "Invoices_C", query: new QueryDefinition($"SELECT * FROM c.data"));
         }
 
 
         [IterationCleanup(Target = "QueryLines")]
         public void QueryLinesOutput() => File.WriteAllText($"rtus-size.QueryLines.{N}.txt", _linesResult._requestsConsumed.ToString());
 
-        [Benchmark]
+        //[Benchmark]
         public async Task QueryLines()
         {
-            _linesResult = await CosmosHelpers.QueryItems<InvoiceLines>(databaseName: "indicosmos", containerName: "Invoices2", query: new QueryDefinition("SELECT VALUE v FROM v IN root.data.lines"));
+            _linesResult = await CosmosHelpers.QueryItems<InvoiceLines>(databaseName: "indicosmos", containerName: "Invoices_C", query: new QueryDefinition("SELECT * FROM c.lines"));
             
         }
     }

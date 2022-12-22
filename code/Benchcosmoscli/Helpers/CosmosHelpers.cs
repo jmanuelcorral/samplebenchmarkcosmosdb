@@ -36,7 +36,7 @@ namespace Benchcosmoscli.Helpers
             }
         }
 
-        public static async Task<TransactionalBatchOperationResult<T>> InsertTransacctionalBatch<T,K>(string databaseName, string containerName,List<T> Elements) where T: IDataObject<K>
+        public static async Task<TransactionalBatchOperationResult<T>> InsertTransacctionalBatch<T,K>(string databaseName, string containerName,List<T> Elements) where T: IDataObject
         {
             using CosmosClient client = new(
                     accountEndpoint: Environment.GetEnvironmentVariable("COSMOS_ENDPOINT")!,
