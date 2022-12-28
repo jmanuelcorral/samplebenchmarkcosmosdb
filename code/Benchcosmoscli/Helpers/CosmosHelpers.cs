@@ -63,6 +63,34 @@ namespace Benchcosmoscli.Helpers
             return null;
         }
 
+
+        public static async Task<TransactionalBatchOperationResult<T>> InsertTransacctionalBatch<T>(string databaseName, string containerName, List<T> Elements) where T : IDataObject
+        {
+            using CosmosClient client = new(
+                    accountEndpoint: Environment.GetEnvironmentVariable("COSMOS_ENDPOINT")!,
+                    authKeyOrResourceToken: Environment.GetEnvironmentVariable("COSMOS_KEY")!
+            );
+            var db = client.GetDatabase(databaseName);
+            var container = db.GetContainer(containerName);
+            PartitionKey partitionKey = new PartitionKey(Elements[0].partitionKey);
+            TransactionalBatch batch = container.CreateTransactionalBatch(partitionKey);
+            foreach (var item in Elements)
+                batch.CreateItem<T>(item);
+            using TransactionalBatchResponse response = await batch.ExecuteAsync();
+            if (response.IsSuccessStatusCode)
+            {
+                Console.WriteLine("Inserted");
+                TransactionalBatchOperationResult<T> productResponse;
+                return response.GetOperationResultAtIndex<T>(0);
+            }
+            else
+            {
+                Console.WriteLine($"ERROR: {response.StatusCode} {response.ErrorMessage}");
+            }
+
+            return null;
+        }
+
         public static async Task CreateContainer(string databaseName, string containerName, string partitionKeyPath)
         {
             using CosmosClient client = new(
