@@ -8,5 +8,5 @@ using Bogus;
 Console.WriteLine("A Sample Benchmark Runner");
 
 //await InvoiceSeeder.SeedData();
-await OrdersTreeSeeder.SeedData();
-//var summary = BenchmarkRunner.Run<CosmosBenchmark>();
+//await OrdersTreeSeeder.SeedData();
+var summary = BenchmarkRunner.Run<CosmosBenchmark>();
