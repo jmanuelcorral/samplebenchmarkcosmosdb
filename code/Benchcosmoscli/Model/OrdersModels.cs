@@ -59,7 +59,7 @@ namespace Benchcosmoscli.Model
 
         public DateTime? FechaHoraLiberacionReserva { get; set; }
 
-        public IEnumerable<LineaPedido> lineasPedido { get; set; } = new List<LineaPedido>();
+        //public IEnumerable<LineaPedido> lineasPedido { get; set; } = new List<LineaPedido>();
         public string id { get; set; }
 
         public string partitionKey => "order";
@@ -77,7 +77,7 @@ namespace Benchcosmoscli.Model
         public string Descripcion { get; set; } = null!;
     }
 
-    public class LineaPedido
+    public class LineaPedido : IDataObject
     {
         public int IdSgaFisico { get; set; }
 
@@ -114,6 +114,14 @@ namespace Benchcosmoscli.Model
         public decimal EsSeleccionadoMarcaAgotar { get; set; }
 
         public decimal EsPrioritario { get; set; }
+        public string id { get; set; }
+
+        public string partitionKey => "orderline";
+
+        public string type => "orderline";
+
+        public string etag { get; set; }
+        public int ttl { get; set; } = -1;
     }
 
 

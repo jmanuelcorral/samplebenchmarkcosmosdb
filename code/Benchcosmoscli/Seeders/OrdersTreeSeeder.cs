@@ -18,6 +18,7 @@ namespace Benchcosmoscli.Seeders
         {
             int i = 0;
             Faker<LineaPedido> FakerOrdersLinesDataGenerator = new Faker<LineaPedido>()
+             .RuleFor(p => p.id, f => Guid.NewGuid().ToString())
              .RuleFor(p => p.IdLineaPedido, f => { i++; return i; })
              .RuleFor(p => p.Unidades, f => f.PickRandom<int>(0, 1, 5, 6, 7, 9, 11))
              .RuleFor(p => p.UsuarioAlta, f => f.Person.UserName)
@@ -29,10 +30,10 @@ namespace Benchcosmoscli.Seeders
 
             Faker<Pedido> FakeOrderDataGenerator = new Faker<Pedido>()
             .RuleFor(p => p.id, f => Guid.NewGuid().ToString())
-            .RuleFor(p => p.CodigoPedido, f => f.PickRandom<string>("ref", "pren", "rol") +  new Random().Next(0, 8000))
+            .RuleFor(p => p.CodigoPedido, f => f.PickRandom<string>("ref", "pren", "rol") + new Random().Next(0, 8000))
             .RuleFor(p => p.CodigoSistemaOrigen, f => f.PickRandom<string>("SGA", "EWMS", "XWMS"))
             .RuleFor(p => p.CodigoReserva, f => f.PickRandom<string>("res", "nonres") + new Random().Next(0, 8000))
-            .RuleFor(p => p.IdEstadoPedido, f => f.PickRandom<short>(0,1,2,3,4,5))
+            .RuleFor(p => p.IdEstadoPedido, f => f.PickRandom<short>(0, 1, 2, 3, 4, 5))
             .RuleFor(p => p.IdCentroDistribucion, f => f.PickRandom<int>(100, 300, 410, 900, 905, 908))
             .RuleFor(p => p.IdCampana, f => f.PickRandom<int>(100, 300, 410, 900, 905, 908))
             .RuleFor(p => p.IdTipoMovimiento, f => f.PickRandom<int>(100, 300, 410, 900, 905, 908))
@@ -42,15 +43,19 @@ namespace Benchcosmoscli.Seeders
             .RuleFor(p => p.FechaAlta, f => f.Date.Between(DateTime.Now.AddYears(-15), DateTime.Now.AddMonths(-3)))
             .RuleFor(p => p.FechaHoraCreacion, f => f.Date.Between(DateTime.Now.AddYears(-15), DateTime.Now.AddMonths(-3)))
             .RuleFor(p => p.UsuarioModificacion, f => f.Person.UserName)
-            .RuleFor(p => p.FechaModificacion, f => f.Date.Between(DateTime.Now.AddYears(-1), DateTime.Now))
-            .RuleFor(p => p.lineasPedido, f => FakerOrdersLinesDataGenerator.Generate(80));
+            .RuleFor(p => p.FechaModificacion, f => f.Date.Between(DateTime.Now.AddYears(-1), DateTime.Now));
+            //.RuleFor(p => p.lineasPedido, f => FakerOrdersLinesDataGenerator.Generate(80));
 
-            //await CosmosHelpers.CreateContainer("indicosmos", "Pedidos", "/partitionKey");
+            //await CosmosHelpers.CreateContainer("indicosmos", "Pedidos_C", "/partitionKey");
 
             for (var x = 0; x <= SeedRounds; x++)
             {
                 var myData = FakeOrderDataGenerator.Generate(Batchsize).ToList();
-                await CosmosHelpers.InsertTransacctionalBatch<Pedido>("indicosmos", "Pedidos", myData);
+                await CosmosHelpers.InsertTransacctionalBatch<Pedido>("indicosmos", "Pedidos_C", myData);
+
+                var myDataLineaPedido = FakerOrdersLinesDataGenerator.Generate(Batchsize).ToList();
+                await CosmosHelpers.InsertTransacctionalBatch<LineaPedido>("indicosmos", "Pedidos_C", myDataLineaPedido);
+
             }
         }
     }
